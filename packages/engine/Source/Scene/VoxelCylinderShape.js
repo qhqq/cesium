@@ -343,8 +343,7 @@ VoxelCylinderShape.prototype.update = function (
   const renderHasAngle =
     renderIsAngleRegular || renderIsAngleFlipped || renderIsAngleRangeZero;
 
-  const shaderUniforms = this.shaderUniforms;
-  const shaderDefines = this.shaderDefines;
+  const { shaderUniforms, shaderDefines } = this;
 
   // To keep things simple, clear the defines every time
   for (const key in shaderDefines) {

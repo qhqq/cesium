@@ -1,7 +1,7 @@
-// See IntersectionUtils.glsl for the definitions of Ray, NO_HIT, INF_HIT,
+// See IntersectionUtils.glsl for the definitions of Ray, NO_HIT, Intersections,
 // RayShapeIntersection, setSurfaceIntersection, setShapeIntersection, VoxelBounds
 // intersectIntersections, invertVolume, removeNegativeIntersection
-// See IntersectLongitude.glsl for the definitions of interesectHalfPlane,
+// See IntersectLongitude.glsl for the definitions of intersectHalfPlane,
 // intersectFlippedWedge, intersectRegularWedge
 
 /* Cylinder defines (set in Scene/VoxelCylinderShape.js)
@@ -87,31 +87,6 @@ RayShapeIntersection intersectBoundedCylinder(in Ray ray, in float radius, in ve
     return intersectIntersections(ray, cylinderIntersection, heightBoundsIntersection);
 }
 
-/**
- * Intersect height bounds as a flat plane tangent to the surface at the voxel center.
- * NOTE: problematic unless voxel sampling is consistent with this behavior.
- * Even then, the resulting faceted surface is not coincedent across LODs
- */
-RayShapeIntersection intersectRadialBounds(in Ray ray, in vec2 normal, in vec2 minMaxRadius)
-{
-    vec2 position = ray.pos.xy;
-    vec2 direction = ray.dir.xy;
-
-    float distanceFromOrigin = dot(position, normal);
-    float approachRate = -dot(direction, normal);
-    float tmin = (distanceFromOrigin - minMaxRadius.x) / approachRate;
-    float tmax = (distanceFromOrigin - minMaxRadius.y) / approachRate;
-
-    vec4 intersectMin = vec4(-normal, 0.0, tmin);
-    vec4 intersectMax = vec4(normal, 0.0, tmax);
-
-    bool fromOutside = approachRate >= 0.0;
-    vec4 entry = fromOutside ? intersectMax : intersectMin;
-    vec4 exit = fromOutside ? intersectMin : intersectMax;
-
-    return RayShapeIntersection(entry, exit);
-}
-
 RayShapeIntersection intersectVoxel(in Ray ray, in VoxelCell voxel)
 {
     // Position is converted from [0,1] to [-1,+1] because shape intersections assume unit space is [-1,+1].
@@ -170,13 +145,9 @@ void intersectShape(in Ray ray, inout Intersections ix)
 
         // Note: If initializeIntersections() changes its sorting function
         // from bubble sort to something else, this code may need to change.
-
-        // In theory a similar fix is needed for cylinders with small non-zero
-        // thickness. But it's more complicated to implement because the inner
-        // shape is allowed to be intersected first.
         RayShapeIntersection innerIntersect = intersectCylinder(ray, 1.0, false);
-        setSurfaceIntersection(ix, 0, outerIntersect.entry, true, true);   // positive, enter
-        setSurfaceIntersection(ix, 1, innerIntersect.entry, false, true);  // negative, enter
+        setSurfaceIntersection(ix, 0, outerIntersect.entry, true, true);  // positive, enter
+        setSurfaceIntersection(ix, 1, innerIntersect.entry, false, true); // negative, enter
         setSurfaceIntersection(ix, 2, innerIntersect.exit, false, false); // negative, exit
         setSurfaceIntersection(ix, 3, outerIntersect.exit, true, false);  // positive, exit
     #elif defined(CYLINDER_HAS_RENDER_BOUNDS_RADIUS_MIN)

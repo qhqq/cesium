@@ -1,6 +1,6 @@
-// See IntersectionUtils.glsl for the definitions of Ray, NO_HIT, INF_HIT,
+// See IntersectionUtils.glsl for the definitions of Ray, NO_HIT, INF_HIT, Intersections,
 // RayShapeIntersection, setSurfaceIntersection, setShapeIntersection, VoxelBounds
-// See IntersectLongitude.glsl for the definitions of interesectHalfPlane,
+// See IntersectLongitude.glsl for the definitions of intersectHalfPlane,
 // intersectFlippedWedge, intersectRegularWedge
 
 /* Ellipsoid defines (set in Scene/VoxelEllipsoidShape.js)
@@ -336,8 +336,8 @@ void intersectShape(in Ray ray, inout Intersections ix) {
         // from bubble sort to something else, this code may need to change.
         innerIntersect.entry.w = max(innerIntersect.entry.w, outerIntersect.entry.w);
         innerIntersect.exit.w = min(innerIntersect.exit.w, outerIntersect.exit.w);
-        setSurfaceIntersection(ix, 0, outerIntersect.entry, true, true);   // positive, enter
-        setSurfaceIntersection(ix, 1, innerIntersect.entry, false, true);  // negative, enter
+        setSurfaceIntersection(ix, 0, outerIntersect.entry, true, true);  // positive, enter
+        setSurfaceIntersection(ix, 1, innerIntersect.entry, false, true); // negative, enter
         setSurfaceIntersection(ix, 2, innerIntersect.exit, false, false); // negative, exit
         setSurfaceIntersection(ix, 3, outerIntersect.exit, true, false);  // positive, exit
     }
